@@ -1,0 +1,23 @@
+meta {
+  name: test_api
+  type: http
+  seq: 1
+}
+
+get {
+  url: https://prim.iledefrance-mobilites.fr/marketplace/stop-monitoring?MonitoringRef=STIF:StopPoint:Q:463024:
+  body: none
+  auth: bearer
+}
+
+query {
+  MonitoringRef: STIF:StopPoint:Q:463024:
+}
+
+headers {
+  apikey: KPqqQPk3gONBzHB50fWrTSC5Ukih11fG
+}
+
+auth:bearer {
+  token: KPqqQPk3gONBzHB50fWrTSC5Ukih11fG
+}

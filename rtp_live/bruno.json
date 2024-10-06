@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "rtp_live",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}
