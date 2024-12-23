@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import styled, { keyframes, css } from 'styled-components'
 import jsonarray from '../json/referentiel-des-lignes.json'
+import ReCAPTCHA from 'react-google-recaptcha' // Import reCAPTCHA
 
 const InfoPage = () => {
   const { arrid } = useParams() // Get the station ID (arrid) from the URL params
   const [data, setData] = useState(null)
   const [selectedLogo, setSelectedLogo] = useState(null) // State to hold the selected logo URL
 
-  // Fetch data for the metro station
   const fetchData = async () => {
     try {
       const response = await fetch(
@@ -22,19 +22,16 @@ const InfoPage = () => {
           }
       )
       const json = await response.json()
-      console.log(json) // Log the entire JSON response
-      setData(json) // Store the fetched data
+      setData(json)
     } catch (error) {
       console.error(error)
     }
   }
 
-  // Function to find the metro line by id in the JSON array
   function find_metro_line(id) {
     return jsonarray.find(item => item.id_line === id)
   }
 
-  // Extract the next departure information
   const getNextDepartureInfo = (data) => {
     const stopMonitoringDelivery = data?.Siri?.ServiceDelivery?.StopMonitoringDelivery?.[0]
     if (!stopMonitoringDelivery || !stopMonitoringDelivery.MonitoredStopVisit) {
@@ -64,23 +61,22 @@ const InfoPage = () => {
       firstDepartureMinutes: firstDepartureMinutes,
       secondDepartureMinutes: secondDepartureMinutes,
       currentStation: currentStation,
-      metro_line: metro_line?.substring(11, 17) // Extract the actual line ID
+      metro_line: metro_line?.substring(11, 17)
     }
   }
 
-  // Use `useEffect` to fetch data when the component mounts
   useEffect(() => {
-    fetchData()
-    const interval = setInterval(fetchData, 20000) // Fetch data every 20 seconds
-    return () => clearInterval(interval) // Cleanup interval on component unmount
+      fetchData()
+      const interval = setInterval(fetchData, 20000) 
+      return () => clearInterval(interval)
   }, [arrid])
 
-  // UseEffect to handle fetching and setting the logo based on the line ID
   useEffect(() => {
     if (data) {
-      const { metro_line } = getNextDepartureInfo(data) // Extract metro line info
+      const { metro_line } = getNextDepartureInfo(data)
       if (metro_line) {
-        const metro_info = find_metro_line(metro_line) // Find the metro line in the JSON
+        const metro_info = find_metro_line(metro_line)
+        console.log("metro info - ", metro_info)
         if (metro_info && metro_info.picto && metro_info.picto.filename) {
           const logoFilename = metro_info.picto.id
           console.log("id :", logoFilename)
@@ -90,44 +86,45 @@ const InfoPage = () => {
         }
       }
     }
-  }, [data]) // Runs whenever `data` is updated
+  }, [data])
 
-  // Extract information for display
   const { destination_title, firstDepartureMinutes, secondDepartureMinutes, currentStation } = data ? getNextDepartureInfo(data) : {}
 
   return (
       <PageContainer>
-        {data ? (
-            <InfoContainer>
-              <DepartureInfo>
-                <SubLabel>1er métro</SubLabel>
-                <DepartureTime isUnderOneMinute={firstDepartureMinutes < 1}>
-                  {firstDepartureMinutes}
-                </DepartureTime>
-              </DepartureInfo>
-              <DepartureInfo>
-                <SubLabel>2e métro</SubLabel>
-                <DepartureTime>{secondDepartureMinutes}</DepartureTime>
-              </DepartureInfo>
-              <DestinationInfo>
-                <p>Destination: {destination_title}</p>
-                <p>Current Station: {currentStation}</p>
-              </DestinationInfo>
-              {selectedLogo && (
-                  <div>
-                    <h2>Selected Line Logo:</h2>
-                    <img src={selectedLogo} alt="Metro Line Logo" style={{ width: 200, height: 200 }} />
-                  </div>
-              )}
-            </InfoContainer>
-        ) : (
-            <LoadingMessage>Loading...</LoadingMessage>
+        { (
+            data ? (
+                <InfoContainer>
+                  <DepartureInfo>
+                    <SubLabel>1er métro</SubLabel>
+                    <DepartureTime isUnderOneMinute={firstDepartureMinutes < 1}>
+                      {firstDepartureMinutes}
+                    </DepartureTime>
+                  </DepartureInfo>
+                  <DepartureInfo>
+                    <SubLabel>2e métro</SubLabel>
+                    <DepartureTime>{secondDepartureMinutes}</DepartureTime>
+                  </DepartureInfo>
+                  <DestinationInfo>
+                    <p>Destination: {destination_title}</p>
+                    <p>Current Station: {currentStation}</p>
+                  </DestinationInfo>
+                  {selectedLogo && (
+                      <div>
+                        <h2>Selected Line Logo:</h2>
+                        <img src={selectedLogo} alt="Metro Line Logo" style={{ width: 200, height: 200 }} />
+                      </div>
+                  )}
+                </InfoContainer>
+            ) : (
+                <LoadingMessage>Loading...</LoadingMessage>
+            )
         )}
       </PageContainer>
   )
 }
 
-// Styled Components (unchanged)
+// Styled components
 const PageContainer = styled.div`
   display: flex;
   justify-content: center;
@@ -157,21 +154,10 @@ const DepartureInfo = styled.div`
   margin: 1rem 0;
 `
 
-const flash = keyframes`
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-`
-
 const DepartureTime = styled.span`
   font-size: 10rem;
   font-weight: bold;
   color: ${(props) => (props.isUnderOneMinute ? 'orange' : 'white')};
-  ${(props) =>
-      props.isUnderOneMinute &&
-      css`
-        animation: ${flash} 1s infinite;
-      `};
-  transition: color 0.5s ease, opacity 0.5s ease;
 `
 
 const SubLabel = styled.span`
@@ -187,6 +173,11 @@ const DestinationInfo = styled.div`
 
 const LoadingMessage = styled.div`
   font-size: 1.5rem;
+  color: white;
+`
+
+const CaptchaContainer = styled.div`
+  text-align: center;
   color: white;
 `
 
